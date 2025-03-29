@@ -1,17 +1,14 @@
 #include <iostream>
-#include <vector>
-#include <algorithm>
+#include <cstdlib>
 #include <chrono>
 
 using namespace std;
 using namespace std::chrono;
 
 // 1. Bubble Sort como función tradicional
-template <typename T>
-void bubbleSortFunction(vector<T>& arr) {
-    int n = arr.size();
-    for (size_t i = 0; i < n - 1; i++) {
-        for (size_t j = 0; j < n - i - 1; j++) {
+void bubbleSortFunction(int* arr, int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
             if (arr[j] > arr[j + 1]) {
                 swap(arr[j], arr[j + 1]);
             }
@@ -21,11 +18,9 @@ void bubbleSortFunction(vector<T>& arr) {
 
 // 2. Bubble Sort usando un Funtor
 struct BubbleSortFunctor {
-    template <typename T>
-    void operator()(vector<T>& arr) {
-        size_t n = arr.size();
-        for (size_t i = 0; i < n - 1; i++) {
-            for (size_t j = 0; j < n - i - 1; j++) {
+    void operator()(int* arr, int n) {
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
                 if (arr[j] > arr[j + 1]) {
                     swap(arr[j], arr[j + 1]);
                 }
@@ -37,16 +32,15 @@ struct BubbleSortFunctor {
 // 3. Bubble Sort con Polimorfismo (clase base y herencia)
 class BubbleSortBase {
 public:
-    virtual void sort(vector<int>& arr) = 0;
+    virtual void sort(int* arr, int n) = 0;
     virtual ~BubbleSortBase() {}
 };
 
 class BubbleSortDerived : public BubbleSortBase {
 public:
-    void sort(vector<int>& arr) override {
-        size_t n = arr.size();
-        for (size_t i = 0; i < n - 1; i++) {
-            for (size_t j = 0; j < n - i - 1; j++) {
+    void sort(int* arr, int n) override {
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
                 if (arr[j] > arr[j + 1]) {
                     swap(arr[j], arr[j + 1]);
                 }
@@ -58,10 +52,9 @@ public:
 // 4. Bubble Sort usando un Function Object
 class BubbleSortFunctionObject {
 public:
-    void operator()(vector<int>& arr) {
-        size_t n = arr.size();
-        for (size_t i = 0; i < n - 1; i++) {
-            for (size_t j = 0; j < n - i - 1; j++) {
+    void operator()(int* arr, int n) {
+        for (int i = 0; i < n - 1; i++) {
+            for (int j = 0; j < n - i - 1; j++) {
                 if (arr[j] > arr[j + 1]) {
                     swap(arr[j], arr[j + 1]);
                 }
@@ -72,9 +65,9 @@ public:
 
 // Función auxiliar para medir el tiempo de ejecución
 template <typename Func>
-void measureTime(Func func, vector<int> arr, const string& method) {
+void measureTime(Func func, int* arr, int n, const string& method) {
     auto start = high_resolution_clock::now();
-    func(arr);
+    func(arr, n);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
     
@@ -82,39 +75,52 @@ void measureTime(Func func, vector<int> arr, const string& method) {
 }
 
 int main() {
-    vector<int> sizes = {1000, 10000, 50000, 75000, 100000};
-    
-    for (int i = 0; i < sizes.size(); i++) {
-        vector<int> arr1(size);
-        vector<int> arr2(size);
-        vector<int> arr3(size);
-        vector<int> arr4(size);
-        
-        // Llenar los vectores con datos en orden descendente
-        for (int i = 0; i < size; i++) {
-            arr1[i] = size - i;
+    int sizes[] = {1000, 10000, 50000, 75000, 100000};
+    int numTests = sizeof(sizes) / sizeof(sizes[0]);
+
+    for (int t = 0; t < numTests; t++) {
+        int n = sizes[t];
+
+        // Crear arreglos dinámicos
+        int* arr1 = new int[n];
+        int* arr2 = new int[n];
+        int* arr3 = new int[n];
+        int* arr4 = new int[n];
+
+        // Llenar los arreglos con datos en orden descendente
+        for (int i = 0; i < n; i++) {
+            arr1[i] = n - i;
         }
-        arr2 = arr1;
-        arr3 = arr1;
-        arr4 = arr1;
-        
-        cout << "\nPrueba con " << size << " elementos:" << endl;
-        
+        // Copiar datos en los demás arreglos
+        for (int i = 0; i < n; i++) {
+            arr2[i] = arr1[i];
+            arr3[i] = arr1[i];
+            arr4[i] = arr1[i];
+        }
+
+        cout << "\nPrueba con " << n << " elementos:" << endl;
+
         // Usando la función
-        measureTime(bubbleSortFunction<int>, arr1, "Función");
-        
+        measureTime(bubbleSortFunction, arr1, n, "Función");
+
         // Usando el funtor
         BubbleSortFunctor sorter;
-        measureTime([&sorter](vector<int>& arr) { sorter(arr); }, arr2, "Funtor");
-        
+        measureTime([&sorter](int* arr, int n) { sorter(arr, n); }, arr2, n, "Funtor");
+
         // Usando polimorfismo
         BubbleSortDerived derivedSorter;
-        measureTime([&derivedSorter](vector<int>& arr) { derivedSorter.sort(arr); }, arr3, "Polimorfismo");
-        
+        measureTime([&derivedSorter](int* arr, int n) { derivedSorter.sort(arr, n); }, arr3, n, "Polimorfismo");
+
         // Usando Function Object
         BubbleSortFunctionObject functionObject;
-        measureTime([&functionObject](vector<int>& arr) { functionObject(arr); }, arr4, "Function Object");
+        measureTime([&functionObject](int* arr, int n) { functionObject(arr, n); }, arr4, n, "Function Object");
+
+        // Liberar memoria
+        delete[] arr1;
+        delete[] arr2;
+        delete[] arr3;
+        delete[] arr4;
     }
-    
+
     return 0;
 }
