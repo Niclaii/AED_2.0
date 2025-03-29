@@ -1,11 +1,19 @@
 #include <iostream>
 #include <cstdlib>
+#include <ctime>
 #include <chrono>
 
 using namespace std;
 using namespace std::chrono;
 
-// 1. Bubble Sort como función tradicional
+// Genera un array aleatorio
+void generateRandomArray(int* arr, int n) {
+    for (int i = 0; i < n; i++) {
+        arr[i] = rand() % 10000; // Valores entre 0 y 9999
+    }
+}
+
+// Bubble Sort como función tradicional
 void bubbleSortFunction(int* arr, int n) {
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - i - 1; j++) {
@@ -16,7 +24,7 @@ void bubbleSortFunction(int* arr, int n) {
     }
 }
 
-// 2. Bubble Sort usando un Funtor
+// Bubble Sort usando un Funtor
 struct BubbleSortFunctor {
     void operator()(int* arr, int n) {
         for (int i = 0; i < n - 1; i++) {
@@ -29,7 +37,7 @@ struct BubbleSortFunctor {
     }
 };
 
-// 3. Bubble Sort con Polimorfismo (clase base y herencia)
+// Bubble Sort con Polimorfismo
 class BubbleSortBase {
 public:
     virtual void sort(int* arr, int n) = 0;
@@ -49,7 +57,7 @@ public:
     }
 };
 
-// 4. Bubble Sort usando un Function Object
+// Bubble Sort usando Function Object
 class BubbleSortFunctionObject {
 public:
     void operator()(int* arr, int n) {
@@ -70,12 +78,14 @@ void measureTime(Func func, int* arr, int n, const string& method) {
     func(arr, n);
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(stop - start);
-    
+
     cout << "Tiempo de ejecución con " << method << ": " << duration.count() << " ms" << endl;
 }
 
 int main() {
-    int sizes[] = {1000, 10000, 50000, 75000, 100000};
+    srand(time(0)); // Inicializar la semilla aleatoria
+
+    int sizes[] = {1000, 5000, 10000}; // Reduciendo las pruebas para evitar tiempos muy largos
     int numTests = sizeof(sizes) / sizeof(sizes[0]);
 
     for (int t = 0; t < numTests; t++) {
@@ -87,11 +97,8 @@ int main() {
         int* arr3 = new int[n];
         int* arr4 = new int[n];
 
-        // Llenar los arreglos con datos en orden descendente
-        for (int i = 0; i < n; i++) {
-            arr1[i] = n - i;
-        }
-        // Copiar datos en los demás arreglos
+        // Generar nuevos datos aleatorios en cada iteración
+        generateRandomArray(arr1, n);
         for (int i = 0; i < n; i++) {
             arr2[i] = arr1[i];
             arr3[i] = arr1[i];
