@@ -6,15 +6,17 @@
 using namespace std;
 using namespace std::chrono;
 
-// Genera un array aleatorio
-void generateRandomArray(int* arr, int n) {
+// **Genera un array aleatorio**
+template <typename T>
+void generateRandomArray(T* arr, int n) {
     for (int i = 0; i < n; i++) {
-        arr[i] = rand() % 10000; // Valores entre 0 y 9999
+        arr[i] = rand() % 10000; // Valores entre 0 y 9999 (para tipos numéricos)
     }
 }
 
-// Bubble Sort como función tradicional
-void bubbleSortFunction(int* arr, int n) {
+// **Bubble Sort como función tradicional**
+template <typename T>
+void bubbleSortFunction(T* arr, int n) {
     for (int i = 0; i < n - 1; i++) {
         for (int j = 0; j < n - i - 1; j++) {
             if (arr[j] > arr[j + 1]) {
@@ -24,9 +26,10 @@ void bubbleSortFunction(int* arr, int n) {
     }
 }
 
-// Bubble Sort usando un Funtor
+// **Bubble Sort usando un Functor**
+template <typename T>
 struct BubbleSortFunctor {
-    void operator()(int* arr, int n) {
+    void operator()(T* arr, int n) {
         for (int i = 0; i < n - 1; i++) {
             for (int j = 0; j < n - i - 1; j++) {
                 if (arr[j] > arr[j + 1]) {
@@ -37,16 +40,18 @@ struct BubbleSortFunctor {
     }
 };
 
-// Bubble Sort con Polimorfismo
+// **Bubble Sort con Polimorfismo**
+template <typename T>
 class BubbleSortBase {
 public:
-    virtual void sort(int* arr, int n) = 0;
+    virtual void sort(T* arr, int n) = 0;
     virtual ~BubbleSortBase() {}
 };
 
-class BubbleSortDerived : public BubbleSortBase {
+template <typename T>
+class BubbleSortDerived : public BubbleSortBase<T> {
 public:
-    void sort(int* arr, int n) override {
+    void sort(T* arr, int n) override {
         for (int i = 0; i < n - 1; i++) {
             for (int j = 0; j < n - i - 1; j++) {
                 if (arr[j] > arr[j + 1]) {
@@ -57,10 +62,11 @@ public:
     }
 };
 
-// Bubble Sort usando Function Object
+// **Bubble Sort usando Function Object**
+template <typename T>
 class BubbleSortFunctionObject {
 public:
-    void operator()(int* arr, int n) {
+    void operator()(T* arr, int n) {
         for (int i = 0; i < n - 1; i++) {
             for (int j = 0; j < n - i - 1; j++) {
                 if (arr[j] > arr[j + 1]) {
@@ -71,9 +77,9 @@ public:
     }
 };
 
-// Función auxiliar para medir el tiempo de ejecución
-template <typename Func>
-void measureTime(Func func, int* arr, int n, const string& method) {
+// **Función auxiliar para medir el tiempo de ejecución**
+template <typename T, typename Func>
+void measureTime(Func func, T* arr, int n, const string& method) {
     auto start = high_resolution_clock::now();
     func(arr, n);
     auto stop = high_resolution_clock::now();
@@ -85,7 +91,7 @@ void measureTime(Func func, int* arr, int n, const string& method) {
 int main() {
     srand(time(0)); // Inicializar la semilla aleatoria
 
-    int sizes[] = {1000, 5000, 10000}; // Reduciendo las pruebas para evitar tiempos muy largos
+    int sizes[] = {1000, 5000, 10000}; // Reduciendo las pruebas para evitar tiempos largos
     int numTests = sizeof(sizes) / sizeof(sizes[0]);
 
     for (int t = 0; t < numTests; t++) {
@@ -108,19 +114,19 @@ int main() {
         cout << "\nPrueba con " << n << " elementos:" << endl;
 
         // Usando la función
-        measureTime(bubbleSortFunction, arr1, n, "Función");
+        measureTime<int>(bubbleSortFunction<int>, arr1, n, "Función");
 
         // Usando el funtor
-        BubbleSortFunctor sorter;
-        measureTime([&sorter](int* arr, int n) { sorter(arr, n); }, arr2, n, "Funtor");
+        BubbleSortFunctor<int> sorter;
+        measureTime<int>([&sorter](int* arr, int n) { sorter(arr, n); }, arr2, n, "Funtor");
 
         // Usando polimorfismo
-        BubbleSortDerived derivedSorter;
-        measureTime([&derivedSorter](int* arr, int n) { derivedSorter.sort(arr, n); }, arr3, n, "Polimorfismo");
+        BubbleSortDerived<int> derivedSorter;
+        measureTime<int>([&derivedSorter](int* arr, int n) { derivedSorter.sort(arr, n); }, arr3, n, "Polimorfismo");
 
         // Usando Function Object
-        BubbleSortFunctionObject functionObject;
-        measureTime([&functionObject](int* arr, int n) { functionObject(arr, n); }, arr4, n, "Function Object");
+        BubbleSortFunctionObject<int> functionObject;
+        measureTime<int>([&functionObject](int* arr, int n) { functionObject(arr, n); }, arr4, n, "Function Object");
 
         // Liberar memoria
         delete[] arr1;
