@@ -6,7 +6,6 @@
 using namespace std;
 using namespace std::chrono;
 
-// 1. Bubble Sort como función tradicional
 template <typename T>
 void bubbleSortFunction(vector<T>& arr) {
     size_t n = arr.size();
@@ -19,7 +18,6 @@ void bubbleSortFunction(vector<T>& arr) {
     }
 }
 
-// 2. Bubble Sort usando un Funtor
 struct BubbleSortFunctor {
     template <typename T>
     void operator()(vector<T>& arr) {
@@ -34,14 +32,13 @@ struct BubbleSortFunctor {
     }
 };
 
-// 3. Bubble Sort con Polimorfismo (clase base y herencia)
 class BubbleSortBase {
 public:
     virtual void sort(vector<int>& arr) = 0;
     virtual ~BubbleSortBase() {}
 };
 
-class BubbleSortDerived : public BubbleSortBase {
+class BubbleSortPolimorfismo : public BubbleSortBase {
 public:
     void sort(vector<int>& arr) override {
         size_t n = arr.size();
@@ -55,7 +52,6 @@ public:
     }
 };
 
-// 4. Bubble Sort usando un Function Object
 class BubbleSortFunctionObject {
 public:
     void operator()(vector<int>& arr) {
@@ -70,7 +66,7 @@ public:
     }
 };
 
-// Función auxiliar para medir el tiempo de ejecución y guardar en archivo
+// FUNCION PARA MEDIR EL TIEMPO
 template <typename Func>
 void measureTime(Func func, vector<int> arr, const string& method) {
     auto start = high_resolution_clock::now();
@@ -79,40 +75,39 @@ void measureTime(Func func, vector<int> arr, const string& method) {
     auto duration = duration_cast<milliseconds>(stop - start);
 
     cout << "Tiempo de ejecucion con " << method << ": " << duration.count() << " ms" << endl;
-    
 }
 
 int main() {
-    vector<int> sizes = { 100, 1000, 10000, 50000 };
+    vector<int> sizes = { 100, 1000, 10000, 50000,100000 };
 
+    vector<int> base_data = { 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
     for (int size : sizes) {
-        vector<int> arr1(size);
-        vector<int> arr2(size);
-        vector<int> arr3(size);
-        vector<int> arr4(size);
+        vector<int> arr1(base_data.begin(), base_data.end());
+        vector<int> arr2(base_data.begin(), base_data.end());
+        vector<int> arr3(base_data.begin(), base_data.end());
+        vector<int> arr4(base_data.begin(), base_data.end());
 
-        // Rellenamos con valores aleatorios
-        generate(arr1.begin(), arr1.end(), rand);
+        while (arr1.size() < size) {
+            arr1.insert(arr1.end(), base_data.begin(), base_data.end());
+        }
+        arr1.resize(size);
         arr2 = arr1;
         arr3 = arr1;
         arr4 = arr1;
 
         cout << "\nPrueba con " << size << " elementos:" << endl;
 
-        // Usando la función
         measureTime(bubbleSortFunction<int>, arr1, "Funcion");
 
-        // Usando el funtor
         BubbleSortFunctor sorter;
         measureTime([&sorter](vector<int>& arr) { sorter(arr); }, arr2, "Funtor");
 
-        // Usando polimorfismo
-        BubbleSortDerived derivedSorter;
-        measureTime([&derivedSorter](vector<int>& arr) { derivedSorter.sort(arr); }, arr3, "Polimorfismo");
+        BubbleSortPolimorfismo PolimorfismoSorter;
+        measureTime([&PolimorfismoSorter](vector<int>& arr) { PolimorfismoSorter.sort(arr); }, arr3, "Polimorfismo");
 
-        // Usando Function Object
         BubbleSortFunctionObject functionObject;
         measureTime([&functionObject](vector<int>& arr) { functionObject(arr); }, arr4, "Function Object");
     }
+
     return 0;
 }
