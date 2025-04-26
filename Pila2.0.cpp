@@ -1,99 +1,118 @@
 #include <iostream>
-
+#include <vector>
 using namespace std;
 
-class Nodo
-{
+class Nodo {
 public:
-	int elem[5];
-	int indice;
-	Nodo* next;
+    int elem[5];
+    int indice;
+    Nodo* next;
 
-	Nodo() {
-		indice = 0;
-		next = nullptr;
-	}
+    Nodo() {
+        indice = 0;
+        next = nullptr;
+    }
 };
 
 template<class T>
-class Pila
-{
+class Pila {
 public:
-	Nodo* A; 
+    Nodo* A;
 
-	Pila() {
-		A = new Nodo;
-	}
+    Pila() {
+        A = new Nodo;
+    }
 
-	void push(T n)
-	{
-		if (A->indice < 5)
-		{
-			A->elem[A->indice++] = n;
-		}
-		else
-		{
-			Nodo* nuevo = new Nodo;
-			nuevo->elem[nuevo->indice++] = n;
-			nuevo->next = A;
-			A = nuevo;
-		}
-	}
+    ~Pila() {
+        while (A) {
+            Nodo* temp = A;
+            A = A->next;
+            delete temp;
+        }
+    }
 
-	void pop()
-	{
-		if (A == nullptr || (A->indice == 0 && A->next == nullptr))
-		{
-			cout << "Pila vacía\n";
-			return;
-		}
+    void push(T n) {
+        if (A->indice < 5) {
+            A->elem[A->indice++] = n;
+        }
+        else {
+            Nodo* nuevo = new Nodo;
+            nuevo->elem[nuevo->indice++] = n;
+            nuevo->next = A;
+            A = nuevo;
+        }
+    }
 
-		if (A->indice > 0)
-		{
-			cout << "Se eliminó: " << A->elem[--A->indice] << endl;
-		}
-		else
-		{
-			Nodo* temp = A;
-			A = A->next;
-			delete temp;
-			pop(); // seguir eliminando
-		}
-	}
+    // Pop devuelve false si la pila está vacía, o true y almacena el valor en 'out'.
+    bool pop(T& out) {
+        if (A == nullptr || (A->indice == 0 && A->next == nullptr)) {
+            // Pila vacía
+            return false;
+        }
+        if (A->indice > 0) {
+            out = A->elem[--A->indice];
+        }
+        else {
+            // Nodo vacío, avanzar al siguiente
+            Nodo* temp = A;
+            A = A->next;
+            delete temp;
+            return pop(out);
+        }
+        // Si el nodo se vació tras pop, eliminarlo
+        if (A->indice == 0 && A->next) {
+            Nodo* temp = A;
+            A = A->next;
+            delete temp;
+        }
+        return true;
+    }
 
-	void print()
-	{
-		Nodo* nodo = A;
-		while (nodo != nullptr) {
-			for (int i = nodo->indice - 1; i >= 0; i--) {
-				cout << nodo->elem[i] << " ";
-			}
-			nodo = nodo->next;
-		}
-		cout << endl;
-	}
+    bool isEmpty() const {
+        return A == nullptr || (A->indice == 0 && A->next == nullptr);
+    }
+
+    void print() const {
+        Nodo* nodo = A;
+        while (nodo) {
+            for (int i = nodo->indice - 1; i >= 0; --i) {
+                cout << nodo->elem[i] << " ";
+            }
+            nodo = nodo->next;
+        }
+        cout << endl;
+    }
 };
 
-int main()
-{
-	Pila<int> pila;
+int main() {
+    Pila<int> pila;
 
-	for (int i = 1; i <= 13; ++i) {
-		pila.push(i);
-	}
+    // Insertar 13 elementos
+    for (int i = 1; i <= 13; ++i) {
+        pila.push(i);
+    }
 
-	pila.print();
+    cout << "Contenido inicial de la pila:\n";
+    pila.print();
 
-	pila.pop();
-	pila.pop();
-	pila.pop();
-	pila.pop();
-	pila.pop();
-	pila.pop();
-	pila.pop();
-	pila.pop();
+    vector<int> eliminados;
+    int valor;
 
-	pila.print();
+    // Eliminar 8 elementos y almacenarlos externamente
+    for (int i = 0; i < 8; ++i) {
+        if (pila.pop(valor)) {
+            eliminados.push_back(valor);
+        }
+    }
 
-	return 0;
+    cout << "Contenido final de la pila:\n";
+    pila.print();
+
+    cout << "Datos eliminados:\n";
+    for (int v : eliminados) {
+        cout << v << " ";
+    }
+    cout << endl;
+
+    return 0;
 }
